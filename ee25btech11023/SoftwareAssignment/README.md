@@ -4,7 +4,7 @@ Singular Value Decomposition (SVD) compresses an image by breaking it down into 
 
 ## Power Iteration Method
 
-The Power Iteration algorithm, also known as the Von Mises iteration, is a straightforward yet effective numerical method used in linear algebra to determine a matrix's largest eigenvalue and its corresponding eigenvector.
+The Power Iteration algorithm is a straightforward yet effective numerical method used in linear algebra to determine a matrix's largest eigenvalue and its corresponding eigenvector.
 
 Below is the Tree Structure of this folder. 
 

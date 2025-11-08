@@ -1,0 +1,339 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{amsthm}
+\usepackage{color}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1em}
+\usepackage{gvv}
+\title{\textbf{Software Assignment Report}\\[10pt]
+\textbf{Compressing Image using SVD}}
+\author{Venkata Sai - EE25BTECH11023}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\newpage
+
+\section*{Introduction to SVD}
+Singular Value Decomposition (SVD) is a fundamental matrix factorization technique that decomposes any rectangular matrix into the product of three matrices.
+ 
+\section*{Summary of Strang's video}
+SVD states that any matrix A can be represented as 
+\begin{align}
+\vec{A} = \vec{U}\Sigma \vec{V}^\top
+\end{align}
+where
+\begin{itemize}
+    \item $\vec{U}$ and $\vec{V}$ are orthogonal matrices (their columns are orthonormal vectors).
+    \item $\Sigma$ is a diagonal matrix containing non-negative real numbers called singular values.
+\end{itemize}
+The lecture shows the relationship between SVD and eigenvalues
+\begin{itemize}
+\item The vectors in $\vec{V}$ are eigen vectors of $\vec{A^\top}\vec{A}$
+\item  The vectors in $\vec{U}$ are eigen vectors of $\vec{A}\vec{A^\top}$
+\item Singular values are square roots of the eigenvalues of these matrices 
+\item The rank of a matrix equals the number of non-zero singular values.
+\end{itemize}
+
+\section*{Usage of SVD in Compression}
+SVD compresses images by exploiting the fact that most image information is concentrated in a few dominant singular values. When an image matrix is decomposed as 
+\begin{align}
+\vec{A} = \vec{U}\Sigma \vec{V}^\top
+\end{align}
+The singular values in $\Sigma$ are ordered from largest to smallest in descending order. The first singular value contains the greatest amount of image information, while subsequent singular values contain progressively decreasing amounts of information. By retaining only the first $k$ singular values and discarding the rest, the lower singular values—which contain negligible or less important information—can be removed without significant image distortion.
+
+\newpage
+\section*{Different types of Algorithms for Compressing the Image}
+
+\subsection*{1. Power Method}
+The power method is an iterative technique that directly computes the dominant eigenvalue of a matrix.
+
+\textbf{Advantages:}  
+- Simple and computationally inexpensive.  
+
+\textbf{Disadvantages:}  
+- Finds Only the Dominant Eigenvalue.  
+- Sensitive to matrix conditioning.
+
+\subsection*{2. Inverse Power Method}
+The inverse power method extends the power method to compute the smallest eigenvalue by inverting the matrix before applying iterations. It effectively locates eigenvalues near a given shift.
+
+\textbf{Advantages:}  
+- Can find any Eigenvalue.
+
+\textbf{Disadvantages:}  
+- Requires matrix inversion, which is computationally expensive for large matrices.
+
+\subsection*{3. Jacobi Method}
+The Jacobi method iteratively diagonalizes a symmetric matrix by rotating it to eliminate off-diagonal elements. It is suitable for dense matrices and provides all eigenvalues simultaneously.
+
+\textbf{Advantages:}  
+- Simple and well-suited for symmetric matrices.  
+
+\textbf{Disadvantages:}  
+- Slow convergence for large matrices.  
+
+\subsection*{4. QR Iteration Method}
+QR Iteration is a method that uses repeated similarity transformations to systematically force a matrix into a triangular shape, revealing its eigenvalues on the diagonal.
+
+\textbf{Advantages:}  
+- Can find any eigenvalue.  
+- Applicable to any matrix.  
+
+\textbf{Disadvantages:}  
+- Can be Slow.
+
+\newpage
+\section*{Power Iteration and its Advantages}
+ The Power Iteration method is one of the most fundamental and intuitive eigenvalue algorithms.It starts with an initial guess for the eigenvector and repeatedly applies the matrix to approximate the eigenvalue. With each iteration, the resulting vector aligns more closely with the direction of the eigenvector associated with the largest eigenvalue.
+
+
+\textbf{Advantages of Power Iteration:}
+\begin{itemize}
+    \item Simple to Implement: The core of the algorithm is just a loop containing a matrix-vector multiplication. This makes it one of the easiest eigenvalue algorithms to understand and code
+    \item Low Memory Usage: The method requires storage for the matrix and only a couple of vectors. It does not need to create large, dense intermediate matrices, making it suitable for very large systems.
+\end{itemize}
+
+\section*{Why I Used the Power Iteration Method}
+The Power Iteration method is extremely efficient if you only need the largest eigenvalue. For applications like image compression, where the most significant component is all that matters, this method avoids the massive computational waste of calculating all eigenvalues, as methods like QR or Jacobi would do.
+
+\section*{Math Logic behind SVD compression}
+\textbf{Problem Statement:} A grayscale image represented as a matrix $\vec{A} \in \mathbb{R}^{M\times N}$ where each entry $\vec{A_{ij}}$ is a pixel value. 
+
+\textbf{To Do:} Compress $\vec{A}$ by keeping only $k$ dominant singular values.
+\begin{align}
+    \vec{A} = \vec{U}\Sigma \vec{V}^\top 
+    \end{align}
+    where
+    \begin{align}
+    \vec{V} = \myvec{v_1 &v_2 &v_3 &\dots }\ &\text{and}\ v_1,v_2,v_3 \dots\ \text{are eigen vectors of $\vec{A}^\top\vec{A}$}  \\
+    \vec{U} &= \myvec{u_1 &u_2 &u_3 &\dots}
+\end{align}
+$\Sigma$ is a diagonal matrix containing singular values($\sigma_1,\sigma_2,\sigma_3 \dots$)
+
+From SVD Decomposition
+\begin{align}
+    &\vec{A} = \vec{U}\Sigma \vec{V}^\top  \\ \vec{A^\top}\vec{A}=\brak{\vec{U}\Sigma \vec{V}^\top}^\top&\vec{U}\Sigma\vec{V^\top}=\vec{V}\Sigma\vec{U^\top}\vec{U}\Sigma\vec{V^\top}=\vec{V}\Sigma^2\vec{V}^\top 
+\end{align}
+This shows that $\sigma^2$ is an eigenvalue($\lambda$) of $\vec{A}^\top\vec{A}$ 
+
+Let $x$ be any random vector
+\begin{align}
+    \vec{x}= c_1\vec{v_1}+c_2\vec{v_2}+c_3\vec{v_3} \dots 
+\end{align}
+After multiplying the vector $\vec{x}$ by $k$ times, we get a new vector $\vec{x_{new}}$ which has been aligned in the direction of the eigen vector of $\vec{A^\top}\vec{A}$
+\begin{align}
+    \vec{x_{new}}=\brak{\vec{A^\top}\vec{A}}^k\vec{x} 
+    \end{align}
+    \begin{align}
+    \vec{x_{new}}=\brak{\vec{A^\top}\vec{A}}^k\brak{ c_1\vec{v_1}+c_2\vec{v_2}+c_3\vec{v_3} \dots} 
+    \end{align}
+    \begin{align}
+    \vec{x_{new}}= c_1\brak{\vec{A^\top}\vec{A}}^k\vec{v_1}+c_2\brak{\vec{A^\top}\vec{A}}^k\vec{v_2}+c_3\brak{\vec{A^\top}\vec{A}}^k\vec{v_3} \dots 
+\end{align}
+\begin{align}
+\vec{x_{new}}=c_1\brak{\lambda_1^k}\vec{v_1}+c_2\brak{\lambda_2^k}\vec{v_2}+c_3\brak{\lambda_3^k}\vec{v_3} \dots 
+\end{align}
+\begin{align}
+\vec{x_{new}}=c_1\brak{\sigma_1^{2k}}\vec{v_1}+c_2\brak{\sigma_2^{2k}}\vec{v_2}+c_3\brak{\sigma_3^{2k}}\vec{v_3} \dots 
+\end{align}
+Since in SVD, $|\sigma_1|>|\sigma_2|>|\sigma_3|$,
+\begin{align}
+  \vec{x_{new}} \sim c_1\brak{\sigma_1^{2k}}\vec{v_1}
+\end{align}
+for which now $\vec{x_{new}}$ is in the direction of eigen vector $\vec{v_1}$.Now normalising the $\vec{x_{new}}$ we get the new eigen vector
+\begin{align}
+    \vec{v_{new}}=\frac{\vec{x_{new}} }{\norm{\vec{x_{new}}}} 
+\end{align}
+\begin{align}
+    \vec{A} &= \vec{U}\Sigma \vec{V}^\top \\
+    \vec{A}\vec{V} = \vec{U}\Sigma\vec{V}^\top\vec{V}  &\implies \vec{A}\vec{V} = \vec{U}\Sigma \\
+    \vec{A}\vec{v_i}&=\sigma_i\vec{u_i}
+\end{align}
+\begin{align}
+\vec{A}=\sigma_1\vec{u_1}\vec{v_1}+\sigma_2\vec{u_2}\vec{v_2}\dots
+\end{align}
+Now we subtract the largest $\sigma$ from $\vec{A}$ by subtracting $\vec{A}\vec{v_{new}}\vec{v_{new}}$(From (18) $\sigma\vec{u}$ can be written as $\vec{A}\vec{v}$)
+\newpage
+\section*{Pseudo Code}
+\begin{lstlisting}
+FUNCTION reconstruct(input_array, output_array, M, N, k)
+    DECLARE u AS ARRAY OF M FLOATS
+    DECLARE v AS ARRAY OF N FLOATS which is an EIGEN VECTOR to 'A TRANSPOSE A'
+    DECLARE temp AS ARRAY OF M FLOATS to store A multiplied v in  FUNCTION power_iteration
+    DECLARE A AS A 2D ARRAY (MATRIX) OF M ROWS AND N COLUMNS OF FLOATS to STORE the input matrix we had obtained FROM the IMAGE
+
+    FOR i FROM 0 TO M-1
+        FOR j FROM 0 TO N-1
+            SET A[i][j] TO input[i * N + j]
+        END FOR
+    END FOR
+
+    FOR l FROM 0 TO k-1
+        FOR i FROM 0 TO N-1
+            SET v[i] TO a random floating number between 0.0 and 1.0
+        END FOR
+        CALL power_iteration(A, v, temp, M, N) to MULTIPLY v WITH 'A TRANSPOSE A' 20 times by MULTIPLYING 'A TRANSPOSE' with  temp
+        CALL compute_u(A, v, u, M, N) to COMPUTE A MULTIPLIED v
+        CALL out_matrix(A, u, v, ARRAY named output, M, N)  to ADD 'u MULTIPLIED by v' to the output matrix and SUBTRACT the same FROM A
+    END FOR
+
+    RELEASE THE MEMORY FOR u, v, temp, and A to CLEAN UP and to be REUSED again
+END FUNCTION
+\end{lstlisting}
+
+\section*{Error Analysis}
+Error Analysis is done using the Frobenius method.
+\begin{align}
+    \norm{A-A_k}_F
+\end{align}
+where $\norm{.}_F$ is the Frobenius norm.
+\section*{Sample Images}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\linewidth]{figs/einstein/einstein.jpg}
+    \caption*{einstein.jpg}
+    \label{fig:placeholder}
+\end{figure}
+\begin{figure}[H]
+
+ \begin{subfigure}{0.2\textwidth}
+    \includegraphics[width=\textwidth]{figs/einstein/einstein_k5.jpg}
+    \caption{k=5}
+    \label{fig:second}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.2\textwidth}
+    \includegraphics[width=\textwidth]{figs/einstein/einstein_k20.jpg}
+    \caption{k=20}
+    \label{fig:second}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.2\textwidth}
+    \includegraphics[width=\textwidth]{figs/einstein/einstein_k50.jpg}
+    \caption{k=50}
+    \label{fig:second}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.2\textwidth}
+    \includegraphics[width=\textwidth]{figs/einstein/einstein_k100.jpg}
+    \caption{k=100}
+    \label{fig:second}
+\end{subfigure}
+\end{figure}
+\input{tables/einstein}
+ \newpage
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.24\linewidth]{figs/globe/globe.jpg}
+    \caption*{globe.jpg}
+    \label{fig:placeholder}
+\end{figure}
+\begin{figure}[H]
+ \begin{subfigure}{0.18\textwidth}
+    \includegraphics[width=\textwidth]{figs/globe/globe_k5.jpg}
+    \caption{k=5}
+    \label{fig:second}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.18\textwidth}
+    \includegraphics[width=\textwidth]{figs/globe/globe_k20.jpg}
+    \caption{k=20}
+    \label{fig:second}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.18\textwidth}
+    \includegraphics[width=\textwidth]{figs/globe/globe_k50.jpg}
+    \caption{k=50}
+    \label{fig:second}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.18\textwidth}
+    \includegraphics[width=\textwidth]{figs/globe/globe_k100.jpg}
+    \caption{k=100}
+    \label{fig:second}
+\end{subfigure}
+\end{figure}
+\input{tables/globe}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.24\linewidth]{figs/greyscale/greyscale.png}
+    \caption*{greyscale.png}
+    \label{fig:placeholder}
+\end{figure}
+\begin{figure}[H]
+ \begin{subfigure}{0.22\textwidth}
+    \includegraphics[width=\textwidth]{figs/greyscale/greyscale_k5.png}
+    \caption{k=5}
+    \label{fig:second}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.22\textwidth}
+    \includegraphics[width=\textwidth]{figs/greyscale/greyscale_k20.png}
+    \caption{k=20}
+    \label{fig:second}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.22\textwidth}
+    \includegraphics[width=\textwidth]{figs/greyscale/greyscale_k50.png}
+    \caption{k=50}
+    \label{fig:second}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.22\textwidth}
+    \includegraphics[width=\textwidth]{figs/greyscale/greyscale_k100.png}
+    \caption{k=100}
+    \label{fig:second}
+\end{subfigure}
+\end{figure}
+\input{tables/greyscale}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.24\linewidth]{figs/color/color.jpg}
+    \caption*{color.jpg}
+    \label{fig:placeholder}
+\end{figure}
+\begin{figure}[H]
+ \begin{subfigure}{0.22\textwidth}
+    \includegraphics[width=\textwidth]{figs/color/color_k5.jpg}
+    \caption{k=5}
+    \label{fig:second}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.22\textwidth}
+    \includegraphics[width=\textwidth]{figs/color/color_k20.jpg}
+    \caption{k=20}
+    \label{fig:second}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.22\textwidth}
+    \includegraphics[width=\textwidth]{figs/color/color_k50.jpg}
+    \caption{k=50}
+    \label{fig:second}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.22\textwidth}
+    \includegraphics[width=\textwidth]{figs/color/color_k100.jpg}
+    \caption{k=100}
+    \label{fig:second}
+\end{subfigure}
+\end{figure}
+\input{tables/color}
+\section*{Observation}
+As the value of k increases, the quality of the image increases and the Frobenius error decreases.
+\section*{The difference between colour and grayscale images}
+Unlike a grayscale image, Colour images contain three channels, namely R, G, and B, in which we have to apply SVD for each channel separately and combine them at the end to reconstruct the image.
+\section*{Conclusion}
+In conclusion, Singular Value Decomposition (SVD) proves to be a powerful and very effective method for image reconstruction and compression. This makes SVD an efficient tool for applications where storage is a great concern. SVD is a fundamental technique in linear algebra and can be applied to real-world problems, such as image compression.
+ \end{document}

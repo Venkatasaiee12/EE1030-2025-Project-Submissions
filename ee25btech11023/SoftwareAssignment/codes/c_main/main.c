@@ -147,7 +147,7 @@ int main(int argc, char *argv[]){
                 double diff = input[i] - out[i];
                 error += diff*diff;
             }
-            printf("k=%d:\n Error:%.6f\n",k,sqrt(error));  //print the channel
+            printf("k=%d:\nError:%.6f\n",k,sqrt(error));  //print the channel
             print_time(calctime);
         }
         unsigned char *result = malloc(M *N * ch);
